@@ -1,5 +1,11 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import FadeAnimationContainer from "./fade-out-animation-container";
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+} from "react-native";
+import { useEffect, useRef } from "react";
 
 export type LoadingSpinerProps = {
   color?: string | undefined;
@@ -10,22 +16,26 @@ export type LoadingSpinerProps = {
 };
 
 const LoadingSpinner = (props: LoadingSpinerProps) => {
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: props.visible ? 1 : 0,
+      duration: 500,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [props.visible, opacity]);
+
   return (
     <>
-      <FadeAnimationContainer visible={props.visible}>
-        <View
-          style={[
-            styles.container,
-            props.isVertical ? styles.vertical : styles.horizontal,
-          ]}
-        >
-          <Text style={styles.text}>{props.text}</Text>
-          <ActivityIndicator
-            size={props.size ?? "small"}
-            color={props.color ?? styles.text.color}
-          />
-        </View>
-      </FadeAnimationContainer>
+      <Animated.View style={[styles.container, { opacity }]}>
+        <Text style={styles.text}>{props.text}</Text>
+        <ActivityIndicator
+          size={props.size ?? "small"}
+          color={props.color ?? styles.text.color}
+        />
+      </Animated.View>
     </>
   );
 };
